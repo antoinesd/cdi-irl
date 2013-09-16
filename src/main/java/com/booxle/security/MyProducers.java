@@ -12,6 +12,7 @@ import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.lang.annotation.Annotation;
 
 import static javax.crypto.KeyGenerator.getInstance;
 
@@ -20,17 +21,21 @@ import static javax.crypto.KeyGenerator.getInstance;
  */
 public class MyProducers {
 
-
-    final static String LOG_FILE = "./logsecret.txt";
-
     private final static String CIPHER_TYPE = "Blowfish";
+
+
+    private String extractFileName(InjectionPoint ip) {
+        for (Annotation annotation : ip.getQualifiers()) {
+            if (annotation.annotationType().equals(ForFile.class))
+                return ((ForFile) annotation).value();
+        }
+        throw new IllegalStateException("No @ForFile on InjectionPoint");
+    }
 
     @Produces
     @ForFile
     protected CipherOutputStream cipherOutStreamProducer(SecretKey key, InjectionPoint ip) {
-
-        String fileName = ip.getAnnotated().getAnnotation(ForFile.class).value();
-
+        String fileName = extractFileName(ip);
         try {
             Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
             cipher.init(Cipher.ENCRYPT_MODE, key);
@@ -43,8 +48,7 @@ public class MyProducers {
     @Produces
     @ForFile
     protected CipherInputStream cipherInStreamProducer(SecretKey key, InjectionPoint ip) {
-        String fileName = ip.getAnnotated().getAnnotation(ForFile.class).value();
-
+        String fileName = extractFileName(ip);
         try {
             Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
             cipher.init(Cipher.DECRYPT_MODE, key);

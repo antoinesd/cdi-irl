@@ -1,6 +1,7 @@
 package com.booxle.security;
 
 import com.booxle.ForFile;
+import com.booxle.ForFileLiteral;
 import com.booxle.StreamUtils;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -12,6 +13,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,12 +30,12 @@ import java.nio.file.Paths;
 public class CipherTesting {
 
     @Inject
-    @ForFile("testfile.txt")
-    OutputStream os;
+    @Any
+    Instance<OutputStream> osInstances;
 
     @Inject
-    @ForFile("testfile.txt")
-    InputStream is;
+    @Any
+    Instance<InputStream> isInstances;
 
     @Deployment
     public static Archive<?> createTestArchive() throws FileNotFoundException {
@@ -48,6 +51,7 @@ public class CipherTesting {
 
     @Test
     public void writeTest() throws IOException {
+        OutputStream os = osInstances.select(new ForFileLiteral("AnotherTestFile.txt")).get();
 
         os.write("hello world".getBytes());
         Assert.assertTrue(Files.exists(Paths.get(MyProducers.LOG_FILE)));
@@ -56,6 +60,9 @@ public class CipherTesting {
 
     @Test
     public void writeAndReadTest() throws IOException {
+        ForFile qual = new ForFileLiteral("AnotherOtherTestFile.txt");
+        OutputStream os = osInstances.select(qual).get();
+        InputStream is = isInstances.select(qual).get();
 
         os.write("hello world".getBytes());
         os.close();
