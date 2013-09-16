@@ -20,9 +20,6 @@ import static javax.crypto.KeyGenerator.getInstance;
  */
 public class MyProducers {
 
-
-    final static String LOG_FILE = "./logsecret.txt";
-
     private final static String CIPHER_TYPE = "Blowfish";
 
     @Produces

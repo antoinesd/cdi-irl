@@ -26,12 +26,14 @@ import java.nio.file.Paths;
 @RunWith(Arquillian.class)
 public class CipherTesting {
 
+    private static final String FILE_PATH = "testfile.txt";
+
     @Inject
-    @ForFile("testfile.txt")
+    @ForFile(FILE_PATH)
     OutputStream os;
 
     @Inject
-    @ForFile("testfile.txt")
+    @ForFile(FILE_PATH)
     InputStream is;
 
     @Deployment
@@ -50,7 +52,7 @@ public class CipherTesting {
     public void writeTest() throws IOException {
 
         os.write("hello world".getBytes());
-        Assert.assertTrue(Files.exists(Paths.get(MyProducers.LOG_FILE)));
+        Assert.assertTrue(Files.exists(Paths.get(FILE_PATH)));
 
     }
 
