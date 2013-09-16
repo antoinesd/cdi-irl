@@ -1,6 +1,7 @@
 package com.booxle.security;
 
 import com.booxle.BooxleException;
+import com.booxle.ForFile;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -8,6 +9,7 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.InjectionPoint;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
@@ -24,22 +26,30 @@ public class MyProducers {
     private final static String CIPHER_TYPE = "Blowfish";
 
     @Produces
-    protected CipherOutputStream cipherOutStreamProducer(SecretKey key) {
+    @ForFile
+    protected CipherOutputStream cipherOutStreamProducer(SecretKey key, InjectionPoint ip) {
+
+        String fileName = ip.getAnnotated().getAnnotation(ForFile.class).value();
+
         try {
             Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            return new CipherOutputStream(new FileOutputStream(LOG_FILE), cipher);
+            return new CipherOutputStream(new FileOutputStream(fileName), cipher);
         } catch (Exception e) {
             throw new BooxleException(e);
         }
     }
 
     @Produces
-    protected CipherInputStream cipherInStreamProducer(SecretKey key) {
+    @ForFile
+    protected CipherInputStream cipherInStreamProducer(SecretKey key, InjectionPoint ip) {
+        String fileName = ip.getAnnotated().getAnnotation(ForFile.class).value();
+
         try {
             Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
             cipher.init(Cipher.DECRYPT_MODE, key);
-            return new CipherInputStream(new FileInputStream(LOG_FILE), cipher);
+
+            return new CipherInputStream(new FileInputStream(fileName), cipher);
         } catch (Exception e) {
             throw new BooxleException(e);
         }

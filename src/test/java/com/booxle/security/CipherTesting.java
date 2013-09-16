@@ -1,5 +1,6 @@
 package com.booxle.security;
 
+import com.booxle.ForFile;
 import com.booxle.StreamUtils;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -26,9 +27,11 @@ import java.nio.file.Paths;
 public class CipherTesting {
 
     @Inject
+    @ForFile("testfile.txt")
     OutputStream os;
 
     @Inject
+    @ForFile("testfile.txt")
     InputStream is;
 
     @Deployment
