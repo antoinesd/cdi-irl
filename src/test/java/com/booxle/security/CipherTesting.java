@@ -54,7 +54,7 @@ public class CipherTesting {
         OutputStream os = osInstances.select(new ForFileLiteral("AnotherTestFile.txt")).get();
 
         os.write("hello world".getBytes());
-        Assert.assertTrue(Files.exists(Paths.get(MyProducers.LOG_FILE)));
+        Assert.assertTrue(Files.exists(Paths.get("AnotherTestFile.txt")));
 
     }
 
