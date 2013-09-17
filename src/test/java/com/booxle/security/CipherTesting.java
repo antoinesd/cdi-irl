@@ -1,8 +1,6 @@
 package com.booxle.security;
 
-import com.booxle.ForFile;
 import com.booxle.ForFileLiteral;
-import com.booxle.StreamUtils;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -18,8 +16,6 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -31,11 +27,7 @@ public class CipherTesting {
 
     @Inject
     @Any
-    Instance<OutputStream> osInstances;
-
-    @Inject
-    @Any
-    Instance<InputStream> isInstances;
+    Instance<AccessFileService> afsInstances;
 
     @Deployment
     public static Archive<?> createTestArchive() throws FileNotFoundException {
@@ -43,31 +35,32 @@ public class CipherTesting {
 
         WebArchive ret = ShrinkWrap
                 .create(WebArchive.class, "test.war")
-                .addClasses(MyProducers.class)
+                .addClasses(MyProducers.class, AccessFileService.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
         return ret;
     }
 
+    public AccessFileService getAccessFileService(String filename) {
+        return afsInstances.select(new ForFileLiteral(filename)).get();
+    }
+
     @Test
     public void writeTest() throws IOException {
-        OutputStream os = osInstances.select(new ForFileLiteral("AnotherTestFile.txt")).get();
-
-        os.write("hello world".getBytes());
+        AccessFileService afs = getAccessFileService("AnotherTestFile.txt");
+        afs.write("hello world");
         Assert.assertTrue(Files.exists(Paths.get("AnotherTestFile.txt")));
 
     }
 
     @Test
     public void writeAndReadTest() throws IOException {
-        ForFile qual = new ForFileLiteral("AnotherOtherTestFile.txt");
-        OutputStream os = osInstances.select(qual).get();
-        InputStream is = isInstances.select(qual).get();
+        AccessFileService afs = getAccessFileService("AnotherOtherTestFile.txt");
 
-        os.write("hello world".getBytes());
-        os.close();
 
-        String readed = StreamUtils.getStreamContents(is);
+        afs.write("hello world");
+
+        String readed = afs.read();
 
         Assert.assertTrue("hello world".equals(readed));
 
